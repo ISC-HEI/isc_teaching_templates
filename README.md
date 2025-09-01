@@ -74,10 +74,23 @@ apt install parallel rename librsvg2-bin
 apt install texlive-full
 ```
 
+### General macOS dependencies
+Installation using [MacPorts](https://www.macports.org) (not minimal):
+
+```bash
+port install librsvg
+port install texlive-latex texlive-latex-extra
+```
 ---  
 
 ### Installing Pandoc 
 Please install `pandoc` latest version from here `https://github.com/jgm/pandoc/releases/tag/3.1.2` or newer, following the instructions. Please do not use `apt` for installing `pandoc` as the packages are largely outdated (at least for older Ubuntu distributions).
+
+On macOS, you may install `pandoc` using MacPorts:
+
+```bash
+port install pandoc
+```
 
 ## Compiling a lab with the toolchain
 Clone this repository somewhere in your filesystem. Let's consider that the toolchain is installed in `~/build_tool/`. 
