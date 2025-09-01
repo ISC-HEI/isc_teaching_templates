@@ -86,7 +86,7 @@ port install texlive-latex texlive-latex-extra
 ### Installing Pandoc 
 Please install `pandoc` latest version from here `https://github.com/jgm/pandoc/releases/tag/3.1.2` or newer, following the instructions. Please do not use `apt` for installing `pandoc` as the packages are largely outdated (at least for older Ubuntu distributions).
 
-On macOS, you may install `pandoc` using MacPort:
+On macOS, you may install `pandoc` using MacPorts:
 
 ```bash
 port install pandoc
