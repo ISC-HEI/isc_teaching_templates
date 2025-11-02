@@ -80,9 +80,9 @@ pushd "$DIR" || exit
 # mathml is fast but ugly. katex is fine
 
 if $TOC; then
-    pandoc "${input}" -o "${output}" --from markdown+tex_math_dollars+raw_tex+emoji --"${MATH_ENGINE}" --data-dir="$SCRIPT_DIR/html_templates" --template="${TEMPLATE}" --toc --toc-depth=2 --embed-resources --standalone --strip-comments
+    pandoc "${input}" -o "${output}" --from markdown+tex_math_dollars+raw_tex+emoji --"${MATH_ENGINE}" --data-dir="$SCRIPT_DIR/html_templates" --template="${TEMPLATE}" --resource-path=".:$SCRIPT_DIR/html_templates" --toc --toc-depth=2 --embed-resources --standalone --strip-comments
 else
-    pandoc "${input}" -o "${output}" --from markdown+tex_math_dollars+raw_tex+emoji --"${MATH_ENGINE}" --data-dir="$SCRIPT_DIR/html_templates" --template="${TEMPLATE}" --embed-resources --standalone --strip-comments
+    pandoc "${input}" -o "${output}" --from markdown+tex_math_dollars+raw_tex+emoji --"${MATH_ENGINE}" --data-dir="$SCRIPT_DIR/html_templates" --template="${TEMPLATE}" --resource-path=".:$SCRIPT_DIR/html_templates" --embed-resources --standalone --strip-comments
 fi
 
 if [ -n "$DEST_PDF" ]; then
