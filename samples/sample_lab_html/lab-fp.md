@@ -1,7 +1,7 @@
 ---
 title: "Assignment 1 -- Introduction"
 author: "Dr P.-A. Mudry"
-version: "v1.0.00"
+version: "v1.0.1"
 course: "205.1 Functional Programming"
 toc-title: "Table of contents"
 summary: 

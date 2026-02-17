@@ -99,12 +99,31 @@ $-- by the CSS file in the finalized template:
     border:none;
     visibility:hidden;  
   }
-  .bckTTImg {
+  .bckTTArrow {
     height:40px;
     width:40px;
-    float:center;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    margin:0 auto;
+    border-radius:50%;
+    background:#d31366;
+    position:relative;
   }
-  .bckTTImg:hover{
+  .bckTTArrow::before{
+    content:"\2191";
+    color:#ffffff;
+    font-size:22px;
+    font-weight:900;
+    line-height:1;
+    font-family:Arial, sans-serif;
+    text-shadow:0 1px 2px rgba(0,0,0,0.35);
+    position:absolute;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-59%);
+  }
+  .bckTTArrow:hover{
     filter:brightness(50%)
   }
   a{
@@ -139,11 +158,12 @@ $-- by the CSS file in the finalized template:
   }
   #title1{
   width:75%;
+  margin:0;
   }
   .headCls{
     display:flex;
     flex-direction:row;
-    vertical-align: top;
+    align-items:center;
     width:100%;
     position:relative;
     border-bottom: 2px solid #eaecef;
@@ -155,7 +175,7 @@ $-- by the CSS file in the finalized template:
   }
 }
 @media (max-width: 1000px) {
-  img{
+  .header-logo{
     visibility:hidden;
     display:none;
   }
@@ -352,7 +372,7 @@ $if(title)$
 <header>
 <div class="headCls">
 <h1 class="title$if(subtitle)$ followed-by-subtitle$endif$" id="title1" style="font-size:3em;border-bottom:none; margin-bottom:0;">$title$</h1>
-<img src="figs/ISC_Logo_inline_v1_FR.svg" style="width:300px;"/>
+<img src="figs/ISC_Logo_inline_v3_black.svg" class="header-logo" style="width:300px;"/>
 </div>
 <h4><p class="subtitle">$course$ - $version$</p></h4>
 $---------------------------------------------------------------------> subtitle
@@ -394,7 +414,7 @@ $if(toc)$
 </div>
 <div class="bckTT">
 <a href="#top";>
-<img src="figs/arrow.svg" class="bckTTImg"/>
+<span class="bckTTArrow" aria-hidden="true"></span>
 <a>
 </div>
 </html>
