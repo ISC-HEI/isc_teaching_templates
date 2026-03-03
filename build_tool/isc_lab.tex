@@ -15,6 +15,7 @@
 \PassOptionsToPackage{unicode$for(hyperrefoptions)$,$hyperrefoptions$$endfor$}{hyperref}
 \PassOptionsToPackage{hyphens}{url}
 \PassOptionsToPackage{dvipsnames,svgnames*,x11names*,table}{xcolor}
+\AtBeginDocument{\renewcommand*{\theHlstnumber}{\arabic{lstnumber}}}% or manually put it after `\begin{document}`
 
 $if(dir)$
 $if(latex-dir-rtl)$
@@ -813,11 +814,7 @@ $if(listings)$
 
 % So numbers are not copied
 \usepackage{accsupp}
-\newcommand{\noncopynumber}[1]{%
-    \BeginAccSupp{method=escape,ActualText={}}%
-    #1%
-    \EndAccSupp{}%
-}
+\renewcommand*{\thelstnumber}{\protect\BeginAccSupp{ActualText={}}\arabic{lstnumber}\protect\EndAccSupp{}}
 
 \lstdefinestyle{framed}{
     style=basic_style,
@@ -829,7 +826,7 @@ $if(listings)$
     rulecolor        = \color{listing-rule},
     % frameround       = tttt,
     tabsize          = 4,
-    numberstyle      = {\footnotesize \color{listing-numbers}\noncopynumber},
+    numberstyle      = \footnotesize\color{listing-numbers},
     % aboveskip        = 1.0em,
     % belowskip        = 0.1em,
     % abovecaptionskip = 0em,
@@ -907,7 +904,7 @@ $if(listings)$
 \lstdefinelanguage{scala}{
   style=framed,
   numbers = left,
-  numberstyle = {\scriptsize \color{listing-numbers}\noncopynumber},
+  numberstyle = {\scriptsize \color{listing-numbers}},
   stepnumber =1,
   numbersep = 15pt,
   basicstyle={\footnotesize\ttfamily\color{hei_dark}},
@@ -937,7 +934,7 @@ $if(listings)$
 \lstdefinelanguage{C}{
   style = framed,
   numbers = left,
-  numberstyle = {\scriptsize \color{listing-numbers}\noncopynumber},
+  numberstyle = {\scriptsize \color{listing-numbers}},
   stepnumber =1,
   numbersep = 15pt,
   basicstyle={\footnotesize\ttfamily\color{hei_dark}},
