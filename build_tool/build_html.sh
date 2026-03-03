@@ -6,6 +6,15 @@ MATH_ENGINE="katex"
 TOC=true
 TEMPLATE="GitHub3.html5"
 
+BOLD="\033[1m"
+CYAN="\033[36m"
+YELLOW="\033[33m"
+RESET="\033[0m"
+printf "${BOLD}${CYAN}╔══════════════════════════════════════╗${RESET}\n"
+printf "${BOLD}${CYAN}║  ISC Documents Toolchain             ║${RESET}\n"
+printf "${BOLD}${CYAN}║  Version ${YELLOW}%-28s${CYAN}║${RESET}\n" "${VERSION}"
+printf "${BOLD}${CYAN}╚══════════════════════════════════════╝${RESET}\n"
+
 Help()
 {
    # Display Help
