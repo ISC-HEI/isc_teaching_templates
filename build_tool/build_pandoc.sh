@@ -1,14 +1,23 @@
 #!/bin/bash
-VERSION="1.0.1"
+VERSION="1.0.2"
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 DIR="."
 TEMPLATE="isc_lab.tex"
+
+BOLD="\033[1m"
+CYAN="\033[36m"
+YELLOW="\033[33m"
+RESET="\033[0m"
+printf "${BOLD}${CYAN}╔══════════════════════════════════════╗${RESET}\n"
+printf "${BOLD}${CYAN}║  ISC Documents Toolchain             ║${RESET}\n"
+printf "${BOLD}${CYAN}║  Version ${YELLOW}%-28s${CYAN}║${RESET}\n" "${VERSION}"
+printf "${BOLD}${CYAN}╚══════════════════════════════════════╝${RESET}\n"
 
 ############################################################
 # Process the input options. Add options as needed.        #
 ############################################################
 # Get the options
-while getopts ":i:n:t:h:o:" option; do
+while getopts ":i:n:tho:" option; do
    case $option in
       i) # Input file
          input="$OPTARG"         

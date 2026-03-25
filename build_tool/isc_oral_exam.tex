@@ -27,7 +27,7 @@ $endif$
 %
 \documentclass[
 $if(fontsize)$
-  $fontsize$,
+  fontsize=$fontsize$,
 $endif$
 $if(lang)$
   $babel-lang$,
@@ -700,8 +700,6 @@ $endif$
 \usepackage[skins]{tcolorbox}
 \usepackage{wrapfig}
 \usepackage{enumitem}
-\usepackage[explicit]{titlesec}
-
 % Lof of shit
 \definecolor{default-linkcolor}{HTML}{A50000}
 \definecolor{default-filecolor}{HTML}{A50000}
@@ -713,38 +711,39 @@ $endif$
   \newcommand{\todo}[1]{\colorbox{Yellow}{\large{#1}}}
 \fi
 
-% Specific sections formatting
-\titleformat{\section}[block]
-  {\normalfont\Huge\bfseries\color{darkgray}} % filcenter to center the stuff
-  {}
-  {0pt}
-  %{\vspace{-6pt}\titlerule \\ \thesection.~}[\titlerule]
-  %{\colorbox{Cerulean!15}{\parbox{\textwidth}{\thesection. #1}}}
-  %{\colorbox{Cerulean!15}{\parbox{\textwidth}{#1}\vspace{2pt}}}
-  {\vspace{-6pt}\titlerule \\ #1}[\titlerule\vspace{3mm}]
+% Specific sections formatting using KOMA-Script compatible approach
+\RedeclareSectionCommand[
+  beforeskip=0.05\baselineskip,
+  afterskip=0.1\baselineskip,
+  font=\normalfont\fontsize{14pt}{16pt}\selectfont\bfseries\color{darkgray}
+]{section}
+\RedeclareSectionCommand[
+  beforeskip=0.6\baselineskip,
+  afterskip=0.01\baselineskip,
+  font=\normalfont\large\bfseries
+]{subsection}
+\RedeclareSectionCommand[
+  beforeskip=0.4\baselineskip,
+  afterskip=0.01\baselineskip,
+  font=\normalfont\bfseries\normalsize
+]{subsubsection}
 
-\titleformat{\subsection}
-  {\normalfont\large\bfseries}
-  {}
-  {0pt}
-  {#1}
-  %{\thesubsection~#1}[\vspace{2pt}\titlerule\vspace{5pt}]
+% Hide section numbering (was implicitly hidden by titlesec's empty label format)
+\setcounter{secnumdepth}{0}
 
-\titleformat{\subsubsection}
-  {\normalfont\bfseries\normalsize}
-  %{\normalfont\bfseries\normalsize\color{magenta}}
-  {}
-  {0pt}
-  {#1}
-
-% Spaces before and after sections titles
-% Left Before After
-\titlespacing*{\section}
-{0pt}{0.05\baselineskip}{0.1\baselineskip}
-\titlespacing*{\subsection}
-{0pt}{0.6\baselineskip}{0pt}
-\titlespacing*{\subsubsection}
-{0pt}{0.4\baselineskip}{0pt}
+% Add horizontal rules around section titles only (not subsections)
+\makeatletter
+\renewcommand{\sectionlinesformat}[4]{%
+  \ifstr{#1}{section}{%
+    \vspace{-18pt}%
+    \rule{\textwidth}{0.4pt}\par\nobreak\vspace{-8pt}%
+    #4\par\nobreak\vspace{-16pt}%
+    \rule{\textwidth}{0.4pt}\vspace{3mm}%
+  }{%
+    \@hangfrom{\hskip#2#3}{#4}%
+  }%
+}
+\makeatother
 
 
 
@@ -1291,7 +1290,7 @@ $endif$
 % For coping with the logo
 \begin{tikzpicture}[remember picture,overlay]
 	\node[anchor=north east,inner sep=0pt] at ($$(current page.north east)-(1.3cm,0.8cm)$$) {
-    \includegraphics[height=1.9cm]{figs/ISC Logo inline black v3.pdf.pdf}
+    \includegraphics[height=1.425cm]{figs/ISC Logo inline black v3.pdf}
 	};
 \end{tikzpicture}
 
