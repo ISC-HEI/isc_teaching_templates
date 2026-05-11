@@ -4,6 +4,7 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 DIR="."
 MATH_ENGINE="katex"
 TOC=true
+TOC_DEPTH=2
 TEMPLATE="GitHub3.html5"
 
 BOLD="\033[1m"
@@ -21,13 +22,14 @@ Help()
    echo "Generate an HTML file from an MD file, from the ISC toolchain"
    echo "Version $VERSION, Pierre-André Mudry, 2024"
    echo
-   echo "Syntax: build_html.sh [-n input_file] [-h] [-m math_engine] [-t] [-o output_file]"
+   echo "Syntax: build_html.sh [-n input_file] [-h] [-m math_engine] [-t] [-d toc_depth] [-o output_file]"
    echo "options:"
    echo "h     Print this help."
-   echo "n     Name of the file to compile."   
+   echo "n     Name of the file to compile."
    echo "o     Destination directory of the PDF file (default, here)."
    echo "m     Math engine used. Options are mathjax, mathml, katex (default), webtex."
    echo "t     Disable table of contents generation in the HTML output."
+   echo "d     TOC depth (default 2). Use 1 to only include level-1 headings."
    echo
 }
 
@@ -35,7 +37,7 @@ Help()
 # Process the input options. Add options as needed.        #
 ############################################################
 # Get the options
-while getopts ":x:m:o:n:th" option; do
+while getopts ":x:m:o:n:d:th" option; do
    case ${option} in
       x ) 
          TEMPLATE="$OPTARG"
@@ -53,7 +55,10 @@ while getopts ":x:m:o:n:th" option; do
          echo "Using math engine $MATH_ENGINE"
          ;;         
       t ) # Disable toc generation
-         TOC=false         
+         TOC=false
+         ;;
+      d ) # TOC depth
+         TOC_DEPTH=$OPTARG
          ;;
       o ) # Destination directory of PDF file        
          DEST_PDF="$OPTARG"
@@ -96,7 +101,7 @@ if [ "$MATH_ENGINE" = "katex" ] && [ -d "$SCRIPT_DIR/html_templates/katex" ]; th
 fi
 
 if $TOC; then
-    pandoc "${input}" -o "${output}" --from markdown+tex_math_dollars+raw_tex+emoji --"${MATH_ENGINE}${KATEX_ARG}" --data-dir="$SCRIPT_DIR/html_templates" --template="${TEMPLATE}" --resource-path=".:$SCRIPT_DIR/html_templates" --toc --toc-depth=2 --embed-resources --standalone --strip-comments
+    pandoc "${input}" -o "${output}" --from markdown+tex_math_dollars+raw_tex+emoji --"${MATH_ENGINE}${KATEX_ARG}" --data-dir="$SCRIPT_DIR/html_templates" --template="${TEMPLATE}" --resource-path=".:$SCRIPT_DIR/html_templates" --toc --toc-depth="${TOC_DEPTH}" --embed-resources --standalone --strip-comments
 else
     pandoc "${input}" -o "${output}" --from markdown+tex_math_dollars+raw_tex+emoji --"${MATH_ENGINE}${KATEX_ARG}" --data-dir="$SCRIPT_DIR/html_templates" --template="${TEMPLATE}" --resource-path=".:$SCRIPT_DIR/html_templates" --embed-resources --standalone --strip-comments
 fi
