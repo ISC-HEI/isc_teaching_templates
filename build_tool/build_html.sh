@@ -88,10 +88,17 @@ pushd "$DIR" || exit
 # options for maths is mathjax, mathml, katex, webtex
 # mathml is fast but ugly. katex is fine
 
+# If using KaTeX, point pandoc at a locally cached copy so --embed-resources
+# does not fetch ~60 font files from the CDN on every build.
+KATEX_ARG=""
+if [ "$MATH_ENGINE" = "katex" ] && [ -d "$SCRIPT_DIR/html_templates/katex" ]; then
+    KATEX_ARG="=katex/"
+fi
+
 if $TOC; then
-    pandoc "${input}" -o "${output}" --from markdown+tex_math_dollars+raw_tex+emoji --"${MATH_ENGINE}" --data-dir="$SCRIPT_DIR/html_templates" --template="${TEMPLATE}" --resource-path=".:$SCRIPT_DIR/html_templates" --toc --toc-depth=2 --embed-resources --standalone --strip-comments
+    pandoc "${input}" -o "${output}" --from markdown+tex_math_dollars+raw_tex+emoji --"${MATH_ENGINE}${KATEX_ARG}" --data-dir="$SCRIPT_DIR/html_templates" --template="${TEMPLATE}" --resource-path=".:$SCRIPT_DIR/html_templates" --toc --toc-depth=2 --embed-resources --standalone --strip-comments
 else
-    pandoc "${input}" -o "${output}" --from markdown+tex_math_dollars+raw_tex+emoji --"${MATH_ENGINE}" --data-dir="$SCRIPT_DIR/html_templates" --template="${TEMPLATE}" --resource-path=".:$SCRIPT_DIR/html_templates" --embed-resources --standalone --strip-comments
+    pandoc "${input}" -o "${output}" --from markdown+tex_math_dollars+raw_tex+emoji --"${MATH_ENGINE}${KATEX_ARG}" --data-dir="$SCRIPT_DIR/html_templates" --template="${TEMPLATE}" --resource-path=".:$SCRIPT_DIR/html_templates" --embed-resources --standalone --strip-comments
 fi
 
 if [ -n "$DEST_PDF" ]; then
