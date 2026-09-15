@@ -74,6 +74,28 @@ local function rawinline (el)
   return nil
 end
 
+-- ── Page break at the end of a paragraph ──────────────────────────────────
+-- `\newpage` glued to the last word of a paragraph is representable: the
+-- break just has to become a block of its own, after the paragraph. Only
+-- the ones inside a list item are lost, Typst forbidding a page break
+-- inside a container.
+local function para (el)
+  local inlines = el.content
+  local last = inlines[#inlines]
+
+  if last and last.t == 'RawInline' and is_latex(last)
+      and (last.text:match('^\\newpage') or last.text:match('^\\clearpage')
+           or last.text:match('^\\pagebreak')) then
+    inlines:remove(#inlines)
+    while #inlines > 0 and inlines[#inlines].t == 'Space' do
+      inlines:remove(#inlines)
+    end
+    return { pandoc.Para(inlines), pandoc.RawBlock('typst', '#pagebreak()') }
+  end
+
+  return nil
+end
+
 -- ── Figures ───────────────────────────────────────────────────────────────
 -- Pulls `\label{x}` out of the caption and re-emits it as a Typst label
 -- right after the figure, which is where Typst expects to find one.
@@ -105,6 +127,6 @@ end
 -- Returning two tables forces a full first pass over the figures, then a
 -- second one over everything else.
 return {
-  { Figure = figure },
+  { Figure = figure, Para = para },
   { RawBlock = rawblock, RawInline = rawinline },
 }

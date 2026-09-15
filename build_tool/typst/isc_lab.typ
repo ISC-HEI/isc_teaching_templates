@@ -41,8 +41,14 @@ $definitions.typst()$
 // `pdftotext -bbox` (title 13.8pt too high, first heading 20.5pt too high);
 // they are tuning knobs, not derived quantities. Re-measure after changing
 // the margins or the title font size.
-#let title-top-offset    = 13.8pt
-#let title-bottom-offset = 20.5pt
+#let title-top-offset    = 17.1pt
+// Near zero because Typst *adds* the explicit v() and the heading block's
+// `above` (27.8pt), where LaTeX's \titlespacing replaces it. Re-measure
+// this one whenever the level-1 `above` changes.
+#let title-bottom-offset = -0.4pt
+// LaTeX's `\\` inside the title block advances by a full \Huge baseline,
+// where Typst's linebreak() uses par.leading, which is smaller.
+#let title-line-gap      = 9.12pt
 
 #let blockquote-bar   = rgb(221, 221, 221)
 #let blockquote-text  = rgb(119, 119, 119)
@@ -57,6 +63,13 @@ $definitions.typst()$
 #let isccallout(accent, default-title, title: none, body) = clue(
   title: if title == none { default-title } else { title },
   accent-color: accent,
+  // gentle-clues leaves the body unfilled by default (body-color: none), so
+  // without these the box shows no colour at all, unlike the tcolorbox.
+  // The two tints are `colback = accent!12!white` and
+  // `colbacktitle = accent!55!white`, sampled on the LaTeX output as
+  // #FCF5F7 and #EFD1D9 for the pink of the "Attention" box.
+  body-color: accent.lighten(88%),
+  header-color: accent.lighten(45%),
   icon: none,
   // par.spacing applies inside the clue too, and gentle-clues does not
   // collapse it, so the first paragraph of the body gets pushed down. This
@@ -143,7 +156,10 @@ $definitions.typst()$
   // LaTeX's \parskip is *added* to \baselineskip. The equivalent of a 6pt
   // \parskip is therefore leading + 6pt, not 6pt. Setting 6pt here comes
   // out tighter than Typst's own default, let alone than LaTeX.
-  set par(justify: true, leading: 0.65em, spacing: 12pt, first-line-indent: 0pt)
+  //
+  // leading and spacing are measured, not derived: with 0.65em/12pt the ink
+  // bands come out 1.30pt and 1.31pt tighter than the LaTeX reference.
+  set par(justify: true, leading: 0.78em, spacing: 13.3pt, first-line-indent: 0pt)
 
   // \setcounter{secnumdepth}{-\maxdimen}: no section numbering at all.
   set heading(numbering: sectionnumbering)
@@ -154,6 +170,11 @@ $definitions.typst()$
   set list(indent: 0.6em)
   set enum(indent: 0.6em)
 
+  // LaTeX adds \topsep on top of \parskip before a list, so a list needs
+  // 1.31pt more room above it than an ordinary paragraph. Measured.
+  show list: set block(above: 14.61pt)
+  show enum: set block(above: 14.61pt)
+
   show link: set text(fill: url-color)
   show ref: set text(fill: link-color)
 
@@ -162,7 +183,11 @@ $definitions.typst()$
   // The size is absolute on purpose. codelst re-emits the listing as nested
   // raw elements, so a relative size like 0.92em would be applied twice and
   // the code would come out noticeably smaller than in the LaTeX output.
-  show raw: set text(font: "Fira Mono", size: 9.5pt)
+  // 8.77pt is measured, not guessed: at 9.5pt the same string comes out
+  // 8.3% wider than in the LaTeX output, which overflows the table cells.
+  // The ratio is identical for inline code and for listings, so one size
+  // covers both.
+  show raw: set text(font: "Fira Mono", size: 8.77pt)
 
   // lstlisting wrapped in mdframed (black!5 background, black!75 frame,
   // roundcorner=4) with the line numbers in the margin.
@@ -206,24 +231,29 @@ $definitions.typst()$
 
   // Tables are booktabs in LaTeX: \toprule and \bottomrule at
   // \heavyrulewidth=0.3ex, a \midrule between header and body, no vertical
-  // rules at all, \arraystretch=1.3 for the padding, all of it in
-  // \arrayrulecolor{table-rule-color}.
+  // rules, \arraystretch=1.3 for the padding, in \arrayrulecolor.
   //
-  // Pandoc already emits the \midrule as `table.hline()`, so only the two
-  // heavy rules have to be added around the table. A show rule is not
-  // re-entered for the same element, so referring to `it` here is safe.
-  set table(inset: (x: 4pt, y: 4pt), stroke: none)
-  set table.hline(stroke: 0.5pt + table-rule)
-  show table: it => block(above: 12pt, below: 12pt, {
-    set block(spacing: 0pt)
-    // Pandoc centres the figure that wraps the table and passes
-    // `align: (auto, auto)`, so without this the cells inherit the
-    // centring instead of staying left-aligned like the LaTeX original.
-    set align(left)
-    line(length: 100%, stroke: 1.2pt + table-rule)
-    it
-    line(length: 100%, stroke: 1.2pt + table-rule)
-  })
+  // The rule targets `figure.where(kind: table)`, not `table`: codelst
+  // builds its listings out of a table too, and a `show table` rule draws
+  // the two heavy rules inside every code block. Everything table-related
+  // is therefore set inside this rule, where only pandoc's tables are seen.
+  set table(stroke: none)
+  show figure.where(kind: table): it => {
+    set table(inset: (x: 4pt, y: 4pt), stroke: none)
+    set table.hline(stroke: 0.5pt + table-rule) // \midrule, emitted by pandoc
+    // Pandoc wraps the table in an explicit `align(center)` and passes
+    // `align: (auto, auto)`, and that wrapper beats a `set align` placed at
+    // the figure level. The alignment therefore has to be set on the table
+    // itself, through a show rule nested here so that it stays invisible to
+    // the table codelst builds for its listings.
+    show table: t => { set align(left); t }
+    block(above: 12pt, below: 12pt, {
+      set block(spacing: 0pt)
+      line(length: 100%, stroke: 1.2pt + table-rule)
+      it
+      line(length: 100%, stroke: 1.2pt + table-rule)
+    })
+  }
 
   // \renewenvironment{quote}: 3pt grey bar on the left, grey text.
   show quote.where(block: true): it => block(
@@ -241,18 +271,28 @@ $definitions.typst()$
   // need a negative v() to look right, and that one overlaps the text.
   show heading.where(level: 1): it => block(
     width: 100%,
-    above: 18pt,
-    below: 12pt,
-    inset: (y: 5pt),
+    above: 27.8pt,
+    below: 7.4pt,
+    // Measured on the reference: 22.26pt between the two rules and 7.20pt
+    // from the lower rule to the first line of body text.
+    inset: (y: 6.3pt),
     stroke: (top: 0.4pt + rule-color, bottom: 0.4pt + rule-color),
     text(size: 14.4pt, weight: "bold", fill: heading-color, it.body),
   )
 
   // \titleformat{\subsection}: \large\bfseries
   // \titlespacing* {0pt}{0.6\baselineskip}{0pt}
+  // Measured: 22.25pt of white before the heading and 13.09pt after it.
+  //
+  // Known residual: LaTeX puts only 10.47pt before a level-2 heading that
+  // directly follows a level-1 one, because titlesec collapses the spacing
+  // of consecutive titles. Typst takes the maximum of the previous block's
+  // `below` and this one's `above` (verified), so a single value cannot be
+  // both 22.25 and 10.47. The frequent case wins; a level-2 heading right
+  // after a level-1 one gets ~12pt too much air.
   show heading.where(level: 2): it => block(
-    above: 14pt,
-    below: 9pt,
+    above: 22.7pt,
+    below: 13.6pt,
     text(size: 12pt, weight: "bold", fill: heading-color, it.body),
   )
 
@@ -282,9 +322,12 @@ $definitions.typst()$
   }
 
   v(4mm + title-top-offset)
-  text(size: 24.88pt, weight: "bold")[#title] // \Huge\bfseries
-  linebreak()
-  text(size: 12pt)[#ue #course] // \large
+  {
+    set par(leading: title-line-gap)
+    text(size: 24.88pt, weight: "bold")[#title] // \Huge\bfseries
+    linebreak()
+    text(size: 12pt)[#ue #course] // \large
+  }
   v(1mm + title-bottom-offset)
 
   doc
