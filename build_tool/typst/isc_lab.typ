@@ -125,16 +125,19 @@ $definitions.typst()$
           align(left)[#title],
           align(right)[#date, v#version],
         )
-        v(-4pt)
+        v(-9.2pt)
         line(length: 100%, stroke: 0.4pt + black)
       }
     },
-    header-ascent: 40%,
+    // header-ascent raises the header into the top margin, so a smaller
+    // percentage pushes it back down towards the body. Measured against the
+    // reference: at 40% the header sat 13.7pt too high.
+    header-ascent: 27%,
 
     // Footer is identical on every page, including the first one.
     footer: context {
       line(length: 100%, stroke: 0.4pt + black)
-      v(-4pt)
+      v(-6.6pt)
       set text(size: 8pt)
       grid(
         columns: (1fr, auto, 1fr),
@@ -239,7 +242,8 @@ $definitions.typst()$
   // is therefore set inside this rule, where only pandoc's tables are seen.
   set table(stroke: none)
   show figure.where(kind: table): it => {
-    set table(inset: (x: 4pt, y: 4pt), stroke: none)
+    // \arraystretch=1.3 : mesuré, le pas entre lignes vaut 18.98pt
+    set table(inset: (x: 4pt, y: 6.3pt), stroke: none)
     set table.hline(stroke: 0.5pt + table-rule) // \midrule, emitted by pandoc
     // Pandoc wraps the table in an explicit `align(center)` and passes
     // `align: (auto, auto)`, and that wrapper beats a `set align` placed at
