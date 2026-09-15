@@ -12,11 +12,13 @@ DIR="."
 TEMPLATE="$SCRIPT_DIR/typst/isc_lab.typ"
 LOGO="$SCRIPT_DIR/figs/ISC Logo inline black v3.pdf"
 KEEP_TYP=true
+COMPRESS=true
 PANDOC_EXTRA=()
 
 BOLD="\033[1m"
 CYAN="\033[36m"
 GREEN="\033[32m"   # accent de la bannière : le Typst
+YELLOW="\033[33m"
 RED="\033[31m"     # réservé aux erreurs
 RESET="\033[0m"
 printf "${BOLD}${CYAN}╔══════════════════════════════════════╗${RESET}\n"
@@ -32,6 +34,7 @@ Usage: $(basename "$0") [options] [file.md]
   -n DIR             working directory (default: .)
   -o DEST            copy the resulting PDF to DEST
   -c                 remove the intermediate .typ file after compiling
+  --no-compress      skip the optional ghostscript pass on the PDF
   -h                 this help
 
 Any other option is forwarded as-is to pandoc.
@@ -47,6 +50,7 @@ while [ $# -gt 0 ]; do
       -o) DEST_PDF="$2"; shift 2 ;;
       -o*) DEST_PDF="${1#-o}"; shift ;;
       -c) KEEP_TYP=false; shift ;;
+      --no-compress) COMPRESS=false; shift ;;
       -h|--help) usage; exit 0 ;;
       --) shift; while [ $# -gt 0 ]; do PANDOC_EXTRA+=("$1"); shift; done ;;
       -*) PANDOC_EXTRA+=("$1"); shift ;;
@@ -120,6 +124,27 @@ if [ $status -ne 0 ]; then
    printf "${RED}- Compilation failed (typst exit code %s)${RESET}\n" "$status"
    popd > /dev/null || exit
    exit $status
+fi
+
+# Optional: repack the PDF with ghostscript when it is installed, and carry
+# on quietly when it is not. Typst embeds a full subset per font, which makes
+# its output about three times heavier than the LaTeX one; ghostscript dedups
+# and repacks the streams and brings it back in line.
+#
+# Same recipe as the isc-curriculum syllabus build, minus -dFastWebView:
+# linearization only pays off for a document served page by page over the web,
+# and ghostscript 9.50 writes a hint table that poppler complains about.
+if [ "$COMPRESS" = true ] && command -v gs > /dev/null 2>&1; then
+   before=$(wc -c < "${output}")
+   if gs -sDEVICE=pdfwrite -dPDFSETTINGS=/prepress -dNOPAUSE -dQUIET -dBATCH \
+         -sOutputFile="${output}.gs" "${output}" > /dev/null 2>&1; then
+      mv -f "${output}.gs" "${output}"
+      after=$(wc -c < "${output}")
+      echo "- Compressed with ghostscript: $((before / 1024)) kB -> $((after / 1024)) kB"
+   else
+      rm -f "${output}.gs"
+      printf "${YELLOW}- ghostscript failed, keeping the PDF as produced${RESET}\n"
+   fi
 fi
 
 if [ -n "$DEST_PDF" ]; then

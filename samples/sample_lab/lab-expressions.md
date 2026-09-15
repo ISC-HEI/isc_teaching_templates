@@ -19,6 +19,10 @@ Some comments for you that read this document:
     - You can include either SVG, PNG, PDF images... as you wish
     - Code can be included using gfm syntax (in the example here, using Scala). Other languages can be added if required, do not hesitate to contact me.
     - LaTex can be included directly in the markdown if required (see example below)
+    - Callout boxes are written as fenced divs: ::: info, ::: warning and
+      ::: checkout, closed by a bare :::. Their default title can be replaced
+      with ::: {.warning title="..."}. They are rendered by both engines.
+    - This sample builds with either engine: ./build.sh or ./build.sh --typst
 -->
 
 
@@ -37,6 +41,11 @@ Nous introduirons également la classe `FunGraphics` qui est une librairie de de
 1. La durée estimée pour réaliser ce laboratoire est de **4 périodes**.
 
 1. Vous pouvez trouver cette donnée sous forme électronique se trouve sur le [site web du cours](https://isc.hevs.ch/learn). Vous y trouverez également la solution dès la semaine prochaine.
+
+::: info
+Ce document existe en deux rendus produits depuis la même source : `./build.sh`
+compile avec LaTeX, `./build.sh --typst` avec Typst.
+:::
 
 # Partie 1 - Exemples simples de tests et de boucles
 
@@ -96,6 +105,11 @@ La librairie graphique permet contient plusieurs méthodes de dessin différente
 
 Nous allons maintenant travailler un peu avec de la couleur. Pour ce faire, rajoutez la ligne `import java.awt.Color` au dessus du début de votre programme.
 
+::: warning
+Sans cette ligne d'`import`, le compilateur ne connaît pas la classe `Color` et
+refusera votre programme.
+:::
+
 1. Créez une nouvelle classe `Task4` basée sur le modèle ci-dessus avec une fenêtre graphique
 1. Écrivez maintenant un code qui va dessiner un rectangle plein, bleu, centré en position [200,200], d'une largeur de 300 pixels et d'une hauteur de 200 pixels. 
 
@@ -145,3 +159,8 @@ Le lemniscate de Bernoulli est une courbe mathématique dont le tracé est le su
 1. Quel est l'effet de $a$ dans le jeu d'équation ci-dessus ?
 
 1. **[Optionnel]** Affichez le dessin de manière animée afin de voir la variation de `t` avec le temps.
+
+::: checkout
+Une fois que vous avez terminé, montrez vos dessins à l'enseignant·e présent
+dans votre salle avant de quitter le laboratoire.
+:::

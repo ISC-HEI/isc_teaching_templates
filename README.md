@@ -13,11 +13,11 @@ Do you want to write good-looking documents for your exams, exercise sets and la
 Here you'll find tools for writing : 
 - [written exams](samples/sample_written_exam/exam-sample.pdf) (and their [solutions](samples/sample_written_exam/exam-sample-sol.pdf))
 - [series of exercises](samples/sample_series/serie-sample.pdf) (with their [solutions too](samples/sample_series/serie-sample.pdf))
-- [laboratories as PDF files](samples/sample_lab/lab-expressions.pdf) or as [HTML files](samples/sample_lab_html/html/lab-fp.html)
+- [laboratories as PDF files](samples/sample_lab/lab-expressions.pdf) or as [HTML files](samples/sample_lab_html/html/lab-fp.html), the PDF being rendered either with LaTeX or, as a [preview feature](#typst-output-preview), [with Typst](samples/sample_lab/lab-expressions-typst.pdf)
 - oral exams (not included in this repo, yet)
 
 # Preamble
-Unfortunately, for the moment, two different sets tools of tools are used to build the different types of documents. 
+Unfortunately, for the moment, two different sets of tools are used to build the different types of documents. 
 
 Because exams and exercises are based on different categories of questions (MCQs, true/false, long questions, etc.), describing those documents requires a certain amount of granularity for automatic management. This flexibility is achieved with the help of regular LaTex documents along with a set of tools that are used to automatically compute the number of points in an exam for the scale, to produce the solution in the same document, etc.
 
@@ -92,6 +92,24 @@ On macOS, you may install `pandoc` using MacPorts:
 port install pandoc
 ```
 
+### Installing Typst (optional)
+Only needed for the preview renderer described below. Grab a binary from the
+[releases page](https://github.com/typst/typst/releases), or use a package
+manager:
+
+```bash
+brew install typst                    # macOS
+cargo install --locked typst-cli      # anywhere Rust is available
+```
+
+Ghostscript is optional too, and used to shrink the generated PDF (see below).
+Without it the build simply skips that step.
+
+```bash
+apt install ghostscript pngquant      # Debian based
+port install ghostscript pngquant     # macOS
+```
+
 ## Compiling a lab with the toolchain
 Clone this repository somewhere in your filesystem. Let's consider that the toolchain is installed in `~/build_tool/`. 
 
@@ -109,6 +127,88 @@ If no file is specified, the first `md` file is compiled
 
 ### Continuous compilation
 It is also possible to run compilation every time the source file is changed by using the `build_continuous.sh` script.
+
+### Keeping the PDF small
+Screenshots are what make a lab heavy, and they are worth quantizing before
+anything else. From the `figs` directory of your lab:
+
+```bash
+pngquant --quality 50-80 *.png --ext .png --force
+```
+
+Careful, this rewrites the files in place, so commit them first or work on a
+copy. On a set of 16 real lab screenshots the gain was 68% (7.9 MB down to
+2.5 MB), for a loss invisible at the size a figure is printed. This is why the
+build scripts do not do it for you: it touches your sources, not the output.
+
+The generated PDF itself is repacked with `ghostscript` on the Typst path, see
+below.
+
+## Typst output (preview)
+Since version `1.3.0`, labs can also be rendered with [Typst](https://typst.app)
+instead of LaTeX. **This is a preview feature**: the LaTeX template remains the
+reference and is not going anywhere.
+
+Why bother? Speed, mostly: the sample lab takes 0.8 s to render with Typst
+against 4.9 s with `xelatex`, and the error messages are readable. The source
+does not change, the very same `.md` feeds both engines — compare
+[the LaTeX output](samples/sample_lab/lab-expressions.pdf) with
+[the Typst one](samples/sample_lab/lab-expressions-typst.pdf).
+
+Typst does *not* produce smaller files: it embeds a full subset per font, so
+its PDF comes out about three times heavier than the LaTeX one. If
+`ghostscript` is installed, the build repacks the file and brings it back in
+line (290 kB down to 100 kB on the sample); if it is not, the step is skipped
+and the PDF is simply bigger. `--no-compress` turns it off.
+
+```bash
+~/build_tool/build_pandoc.sh --typst      # -y works too
+~/build_tool/build_typst.sh               # same thing, called directly
+```
+
+`build_all.sh --typst` does the whole batch. The other options are those of the
+LaTeX path (`-i`, `-n`, `-o`).
+
+An intermediate `.typ` file is written next to the Markdown and kept on
+purpose: it is what you need to debug a layout problem, and
+`typst compile --watch lab.typ` gives a sub-second edit loop. Add `*.typ` to
+your `.gitignore`, or pass `-c` to `build_typst.sh` to have it removed.
+
+### Checking against the LaTeX reference
+The whole point being visual parity, there is a tool for it:
+
+```bash
+~/build_tool/compareEngines.sh lab-expressions.md
+```
+
+It renders the same source with both engines and writes one PNG per page, LaTeX
+on the left and Typst on the right, along with the two page counts. Spacing
+differences are invisible in the sources: you have to look at the pages.
+
+### What is ported, and what is not
+Ported, in `build_tool/typst/isc_lab.typ`: page geometry, fonts, headers and
+footers, headings with their rules, framed listings with line numbers, booktabs
+tables, captions, block quotes and the callout boxes (`::: info`,
+`::: warning`, `::: checkout`, closed by a bare `:::`, with the default title
+replaceable through `::: {.warning title="..."}`). The sample lab uses all
+three. The spacing is
+calibrated against the LaTeX output, measured rather than eyeballed.
+
+Not ported: the oral exam template, and toolchain 1 for exams and series, which
+does not go through `pandoc` at all.
+
+Known differences:
+
+- A `\newpage` at the end of a list item is dropped, Typst forbidding a page
+  break inside a container. One at the end of a paragraph works fine.
+- Syntax highlighting uses Typst's own engine, so token colours are close to,
+  but not identical to, the `lstlisting` palette.
+- A level-2 heading placed directly under a level-1 one gets slightly more air
+  than in LaTeX, which collapses the spacing of consecutive titles.
+
+Raw LaTeX in the Markdown is translated where an equivalent exists (`\newpage`,
+`\vspace`, `\label`, `\ref`); anything else is dropped, so do check the result
+if your source leans on LaTeX commands.
 
 ## Compiling with HTML output
 For HTML output, `pandoc` is used as well. Different themes are provided and even though the results are not perfect so far, it works. To see how it works, go to `samples/sample_lab_html` and run the corresponding `.sh` files. The output looks like this : 
