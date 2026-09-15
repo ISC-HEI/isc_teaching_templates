@@ -6,7 +6,7 @@
 # only way to debug a layout problem, and `typst compile --watch` on it
 # gives a sub-second edit loop. Add *.typ to .gitignore if you don't want
 # it versioned.
-VERSION="1.3.0"
+VERSION="1.3.1"
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 DIR="."
 TEMPLATE="$SCRIPT_DIR/typst/isc_lab.typ"
