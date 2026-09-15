@@ -9,6 +9,7 @@ vanishes and the sentence around it loses its cross-reference.
 Handled:
 
     \newpage / \clearpage / \pagebreak   ->  #pagebreak()
+    \vspace{4mm} / \vspace*{4mm}         ->  #v(4mm)
     \label{x} in a figure caption        ->  a Typst label placed after the figure
     \ref{x} / \autoref{x} / \pageref{x}  ->  @x
 
@@ -28,12 +29,32 @@ local function is_latex (el)
   return el.format == 'latex' or el.format == 'tex'
 end
 
+-- ── Vertical space ───────────────────────────────────────────────────────
+-- Typst understands pt, mm, cm, in and em, so a \vspace in one of those
+-- units maps straight across. Anything else (ex, \baselineskip, a stretch
+-- like `1fill`) has no direct equivalent and is left out rather than
+-- guessed at.
+local typst_units = { pt = true, mm = true, cm = true, ['in'] = true, em = true }
+
+local function vspace (text)
+  local amount, unit = text:match('^\\vspace%*?%s*{%s*(-?[%d%.]+)%s*(%a+)%s*}')
+  if amount and typst_units[unit] then
+    return '#v(' .. amount .. unit .. ')'
+  end
+  return nil
+end
+
 -- ── Page breaks ───────────────────────────────────────────────────────────
 local function rawblock (el)
   if is_latex(el) and el.text:match('^\\%s*$') == nil then
     if el.text:match('^\\newpage') or el.text:match('^\\clearpage')
         or el.text:match('^\\pagebreak') then
       return pandoc.RawBlock('typst', '#pagebreak()')
+    end
+
+    local v = vspace(el.text)
+    if v then
+      return pandoc.RawBlock('typst', v)
     end
   end
   return nil
@@ -58,6 +79,11 @@ local function rawinline (el)
 
   if el.text:match('^\\label%s*{') then
     return {}
+  end
+
+  local v = vspace(el.text)
+  if v then
+    return pandoc.RawInline('typst', v)
   end
 
   -- A bare \newpage sometimes ends up inline, glued to the end of a

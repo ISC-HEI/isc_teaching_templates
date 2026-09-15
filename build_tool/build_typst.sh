@@ -6,7 +6,7 @@
 # only way to debug a layout problem, and `typst compile --watch` on it
 # gives a sub-second edit loop. Add *.typ to .gitignore if you don't want
 # it versioned.
-VERSION="1.0.0"
+VERSION="1.3.0"
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 DIR="."
 TEMPLATE="$SCRIPT_DIR/typst/isc_lab.typ"
@@ -16,11 +16,12 @@ PANDOC_EXTRA=()
 
 BOLD="\033[1m"
 CYAN="\033[36m"
-RED="\033[31m"
+GREEN="\033[32m"   # accent de la bannière : le Typst
+RED="\033[31m"     # réservé aux erreurs
 RESET="\033[0m"
 printf "${BOLD}${CYAN}╔══════════════════════════════════════╗${RESET}\n"
 printf "${BOLD}${CYAN}║  ISC Documents Toolchain -- Typst    ║${RESET}\n"
-printf "${BOLD}${CYAN}║  Version ${RED}%-28s${CYAN}║${RESET}\n" "${VERSION}"
+printf "${BOLD}${CYAN}║  Version ${GREEN}%-28s${CYAN}║${RESET}\n" "${VERSION}"
 printf "${BOLD}${CYAN}╚══════════════════════════════════════╝${RESET}\n"
 
 usage() {

@@ -1,6 +1,13 @@
 #!/bin/bash
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
-BUILD_CMD="./build_pandoc.sh -n"
+# Same --typst / -y switch as build_pandoc.sh, applied to the whole batch.
+ENGINE=""
+for a in "$@"; do
+  case "$a" in
+    --typst|-y) ENGINE="--typst" ;;
+  esac
+done
+BUILD_CMD="./build_pandoc.sh $ENGINE -n"
 
 if parallel --version &> /dev/null; then
   echo "Building all PDF files in parallel..."

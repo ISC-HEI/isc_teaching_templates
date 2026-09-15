@@ -1,10 +1,27 @@
 #!/bin/bash
-VERSION="1.1.0"
+VERSION="1.3.0"
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 DIR="."
 TEMPLATE="isc_lab.tex"
 ENGINE=""
 PANDOC_EXTRA=()
+
+# --typst / -y hands the whole job over to the Typst engine. This is done
+# before anything else so that only one banner is printed, and before the
+# catch-all below that forwards unknown options to pandoc -- pandoc would
+# choke on --typst.
+ARGS=()
+USE_TYPST=false
+for a in "$@"; do
+   case "$a" in
+      --typst|-y) USE_TYPST=true ;;
+      *) ARGS+=("$a") ;;
+   esac
+done
+if [ "$USE_TYPST" = true ]; then
+   exec "$SCRIPT_DIR/build_typst.sh" ${ARGS[@]+"${ARGS[@]}"}
+fi
+set -- ${ARGS[@]+"${ARGS[@]}"}
 
 BOLD="\033[1m"
 CYAN="\033[36m"
@@ -24,6 +41,7 @@ Usage: $(basename "$0") [options] [file.md]
   -n DIR             working directory (default: .)
   -o DEST            copy the resulting PDF to DEST
   -t                 use the oral exam template instead of the lab one
+  --typst, -y        build with Typst instead of LaTeX (see build_typst.sh)
   -e ENGINE          LaTeX engine to use (xelatex, lualatex, pdflatex, ...)
   --pdf-engine=ENG   same as -e (long form also accepted as: --pdf-engine ENG)
   -h                 this help
