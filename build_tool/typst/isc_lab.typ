@@ -11,6 +11,12 @@ $definitions.typst()$
 //  avoided in this file (use sym.* instead).
 // =========================================================================
 
+// Same packages as ISC-HEI/isc-hei-typst-templates: gentle-clues for the
+// callouts and codelst for the listings. codelst's negative numbers-width
+// is what puts the line numbers outside the frame.
+#import "@preview/gentle-clues:1.3.1": clue
+#import "@preview/codelst:2.0.2": sourcecode
+
 // --- ISC programme colours (used by the callout boxes) -------------------
 #let isc-embedded = rgb(152, 199, 191) // Systemes informatiques embarques
 #let isc-security = rgb(226, 171, 186) // Securite informatique
@@ -29,31 +35,34 @@ $definitions.typst()$
 #let caption-color    = rgb("#777777") // caption textfont colour
 #let table-rule       = rgb("#999999") // table-rule-color, \arrayrulecolor
 #let table-row        = rgb("#F5F5F5") // table-row-color
+// Title block offsets. LaTeX places the first baseline with \topskip and
+// geometry's vcentering, neither of which Typst has, so the title block
+// lands too high. Both values were measured on the reference PDF with
+// `pdftotext -bbox` (title 13.8pt too high, first heading 20.5pt too high);
+// they are tuning knobs, not derived quantities. Re-measure after changing
+// the margins or the title font size.
+#let title-top-offset    = 13.8pt
+#let title-bottom-offset = 20.5pt
+
 #let blockquote-bar   = rgb(221, 221, 221)
 #let blockquote-text  = rgb(119, 119, 119)
 
 // --- Callout boxes -------------------------------------------------------
 // Counterpart of the tcolorbox environments in isc_lab.tex. Emitted by
 // lua_filters/callouts.lua from `::: checkout` / `::: warning` / `::: info`.
-#let isccallout(accent, default-title, title: none, body) = {
-  let t = if title == none { default-title } else { title }
-  block(
-    width: 100%,
-    breakable: true,
-    above: 0.65em,
-    below: 0.65em,
-    radius: 2pt,
-    clip: true,
-    stroke: 0.5pt + accent.darken(30%),
-  )[
-    #block(width: 100%, fill: accent.lighten(45%), inset: (x: 7pt, y: 4pt))[
-      #strong[#t]
-    ]
-    #block(width: 100%, fill: accent.lighten(88%), inset: (x: 7pt, y: 5pt))[
-      #body
-    ]
-  ]
-}
+//
+// Built on gentle-clues rather than by hand: a hand-rolled block of two
+// nested blocks leaves a blank line at the top of the body, because the
+// inner block starts a new paragraph.
+#let isccallout(accent, default-title, title: none, body) = clue(
+  title: if title == none { default-title } else { title },
+  accent-color: accent,
+  icon: none,
+  // par.spacing applies inside the clue too, and gentle-clues does not
+  // collapse it, so the first paragraph of the body gets pushed down. This
+  // block absorbs the leading and trailing space while paragraphs *inside*
+  // the box keep their normal gap.
+)[#block(above: 0pt, below: 0pt, body)]
 
 #let isccheckout(title: none, body) = isccallout(isc-embedded, "Checkout", title: title, body)
 #let iscwarning(title: none, body) = isccallout(isc-security, "Attention", title: title, body)
@@ -149,38 +158,39 @@ $definitions.typst()$
   show ref: set text(fill: link-color)
 
   // \usepackage[nomap, lining, medium, scaled=1.1]{FiraMono}
-  show raw: set text(font: "Fira Mono", size: 0.92em)
+  //
+  // The size is absolute on purpose. codelst re-emits the listing as nested
+  // raw elements, so a relative size like 0.92em would be applied twice and
+  // the code would come out noticeably smaller than in the LaTeX output.
+  show raw: set text(font: "Fira Mono", size: 9.5pt)
 
-  // lstlisting wrapped in mdframed: black!5 background, black!75 frame,
-  // roundcorner=4, innertopmargin/innerbottommargin=3pt.
-  // lstlisting numbers the lines of a listing that declares a language and
-  // leaves the plain ones alone, so the same test is applied here.
-  show raw.where(block: true): it => block(
-    width: 100%,
+  // lstlisting wrapped in mdframed (black!5 background, black!75 frame,
+  // roundcorner=4) with the line numbers in the margin.
+  //
+  // codelst does the numbering; numbers-width: -1em pulls the column out of
+  // the frame instead of eating into the code, which is the arrangement of
+  // ISC-HEI/isc-hei-typst-templates. lstlisting only numbers the listings
+  // that declare a language, so plain blocks keep `numbering: none`.
+  // No width on the frame: codelst sizes it, and forcing 100% pushes the
+  // negative-offset number column back under the left border.
+  let listing-frame-block = block.with(
     fill: listing-back,
     stroke: 0.5pt + listing-frame,
     radius: 4pt,
     inset: (x: 6pt, y: 5pt),
+  )
+
+  show raw.where(block: true): it => block(
     above: 9pt, // mdfsetup skipabove=9pt
     below: 6pt,
-    {
-      // par.justify would stretch the code lines, and par.spacing would
-      // push them apart: neither applies to a listing.
-      set par(justify: false, spacing: 0pt)
-      if it.lang == none {
-        it
-      } else {
-        // Prefixing each line through a `raw.line` show rule keeps Typst's
-        // own line layout. Laying the lines out in a grid instead collapses
-        // the row heights and the lines end up overlapping.
-        show raw.line: l => box(width: 100%)[
-          #box(width: 1.5em, align(right, text(fill: listing-numbers, str(l.number))))
-          #h(0.7em)
-          #l.body
-        ]
-        it
-      }
-    },
+    sourcecode(
+      frame: listing-frame-block,
+      numbering: if it.lang == none { none } else { "1" },
+      numbers-style: (lno) => text(fill: listing-numbers, size: 7pt, lno),
+      numbers-width: -1em,
+      gutter: 1.2em,
+      it,
+    ),
   )
 
   // \usepackage[textfont={color=caption-color}, skip=4mm, labelfont=bf,
@@ -271,11 +281,11 @@ $definitions.typst()$
     )
   }
 
-  v(4mm)
+  v(4mm + title-top-offset)
   text(size: 24.88pt, weight: "bold")[#title] // \Huge\bfseries
   linebreak()
   text(size: 12pt)[#ue #course] // \large
-  v(1mm)
+  v(1mm + title-bottom-offset)
 
   doc
 }

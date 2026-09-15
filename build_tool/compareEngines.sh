@@ -5,7 +5,8 @@
 #
 #   ./compareEngines.sh path/to/lab.md [output_dir]
 #
-# Produces in the output directory (default: ./engine-comparison):
+# Produces in the output directory (a temp directory by default, so that a
+# comparison never leaves anything behind in the document repository):
 #   latex-NN.png   typst-NN.png   compare-NN.png   (LaTeX left, Typst right)
 #
 # Requires pdftoppm (poppler-utils) and, for the side-by-side montage,
@@ -28,7 +29,7 @@ if [ $# -lt 1 ]; then
 fi
 
 INPUT=$1
-OUT=${2:-$PWD/engine-comparison}
+OUT=${2:-${TMPDIR:-/tmp}/isc-engine-comparison}
 
 [ -f "$INPUT" ] || { printf "${RED}Input file '%s' not found${RESET}\n" "$INPUT"; exit 1; }
 command -v pdftoppm > /dev/null 2>&1 || { printf "${RED}pdftoppm is required (poppler-utils)${RESET}\n"; exit 1; }
