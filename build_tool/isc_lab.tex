@@ -1099,6 +1099,46 @@ $endif$
 \item\relax\color{blockquote-text}\ignorespaces}{\unskip\unskip\endlist\end{customblockquote}}
 
 %
+% ISC callouts -- coloured boxes driven by the lua_filters/callouts.lua filter.
+%
+% In the markdown source, a fenced div produces the corresponding box:
+%
+%   ::: checkout                     -> \begin{isccheckout} ... \end{isccheckout}
+%   ::: warning                      -> \begin{iscwarning}  ... \end{iscwarning}
+%   ::: info                         -> \begin{iscinfo}     ... \end{iscinfo}
+%   ::: {.warning title="Sur macOS"} -> same, with the default title replaced
+%
+% The colours are the official ISC programme colours.
+%
+\tcbuselibrary{breakable}
+
+\definecolor{isc-embedded}{RGB}{152,199,191} % Systemes informatiques embarques
+\definecolor{isc-security}{RGB}{226,171,186} % Securite informatique
+\definecolor{isc-networks}{RGB}{168,144,192} % Reseaux et systemes
+\definecolor{isc-software}{RGB}{140,198,230} % Informatique logicielle
+\definecolor{isc-data}{RGB}{247,241,159}     % Ingenierie des donnees
+
+\tcbset{
+  isccallout/.style={
+    enhanced, breakable,
+    colback      = #1!12!white,
+    colframe     = #1!70!black,
+    colbacktitle = #1!55!white,
+    coltitle     = black,
+    fonttitle    = \bfseries,
+    boxrule      = 0.5pt,
+    arc          = 2pt,
+    left=7pt, right=7pt, top=5pt, bottom=5pt,
+    toptitle=2pt, bottomtitle=2pt,
+    before skip=\parskip, after skip=\parskip,
+  },
+}
+
+\newtcolorbox{isccheckout}[1][]{isccallout=isc-embedded, title=Checkout, #1}
+\newtcolorbox{iscwarning}[1][]{isccallout=isc-security, title=Attention, #1}
+\newtcolorbox{iscinfo}[1][]{isccallout=isc-software, title=Info, #1}
+
+%
 % header and footer
 %
 $if(beamer)$

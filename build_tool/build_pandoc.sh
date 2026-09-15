@@ -1,5 +1,5 @@
 #!/bin/bash
-VERSION="1.0.3"
+VERSION="1.1.0"
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 DIR="."
 TEMPLATE="isc_lab.tex"
@@ -116,7 +116,7 @@ pushd "$DIR" > /dev/null || exit
 
 # Creating the document, using the selected TeX engine.
 # We also pass the current script directory path for pandoc to find the template. We also require to pass the toolchain directory for including the image once. For this reason, we pass the location of the directory as a variable (which is not escaped by pandoc, and not as a metadata (which is the same as the values given in the YAML header of the .md))
-pandoc "${input}" -o "${output}" --pdf-engine="${ENGINE}" --from markdown+tex_math_dollars+raw_tex --template="$SCRIPT_DIR/$TEMPLATE" --listings -V colorlinks --number-sections --variable=TOOLCHAINPATH:"$SCRIPT_DIR" --metadata=DRAFT:false --metadata=GENERATORVERSION:"$VERSION" "${PANDOC_EXTRA[@]}"
+pandoc "${input}" -o "${output}" --pdf-engine="${ENGINE}" --from markdown+tex_math_dollars+raw_tex --template="$SCRIPT_DIR/$TEMPLATE" --lua-filter="$SCRIPT_DIR/lua_filters/callouts.lua" --listings -V colorlinks --number-sections --variable=TOOLCHAINPATH:"$SCRIPT_DIR" --metadata=DRAFT:false --metadata=GENERATORVERSION:"$VERSION" "${PANDOC_EXTRA[@]}"
 status=$?
 
 if [ $status -ne 0 ]; then
