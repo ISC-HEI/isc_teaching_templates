@@ -1,236 +1,184 @@
-[![CC BY-NC-SA 4.0][cc-by-nc-sa-shield]][cc-by-nc-sa]
+<picture>
+  <source media="(prefers-color-scheme: dark)"
+          srcset="https://raw.githubusercontent.com/ISC-HEI/isc-logos/main/white/ISC%20Logo%20inline%20white%20v3%20-%20large.webp">
+  <img align="right" height="50" alt="ISC Logo"
+       src="https://raw.githubusercontent.com/ISC-HEI/isc-logos/main/black/ISC%20Logo%20inline%20black%20v3%20-%20large.webp"/>
+</picture>
 
-This work is licensed under a
-[Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License][cc-by-nc-sa].
+[![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](http://creativecommons.org/licenses/by-nc-sa/4.0/)
+[![Pandoc](https://img.shields.io/badge/Pandoc-0d1117?logo=pandoc&logoColor=white)](https://pandoc.org/)
+[![LaTeX](https://img.shields.io/badge/LaTeX-0d1117?logo=latex&logoColor=white)](https://www.latex-project.org/)
+[![Typst](https://img.shields.io/badge/Typst-0d1117?logo=typst&logoColor=white)](https://typst.app/)
 
-[cc-by-nc-sa]: http://creativecommons.org/licenses/by-nc-sa/4.0/
-[cc-by-nc-sa-image]: https://licensebuttons.net/l/by-nc-sa/4.0/88x31.png
-[cc-by-nc-sa-shield]: https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg
+# ISC Templates — exams, labs and series
 
-# ISC Templates for exams, labs and series
-Do you want to write good-looking documents for your exams, exercise sets and labs for the [ISC curricula](https://isc.hevs.ch), but find it too time-consuming to produce consistent results? Then this repository is for you!
-
-Here you'll find tools for writing : 
-- [written exams](samples/sample_written_exam/exam-sample.pdf) (and their [solutions](samples/sample_written_exam/exam-sample-sol.pdf))
-- [series of exercises](samples/sample_series/serie-sample.pdf) (with their [solutions too](samples/sample_series/serie-sample.pdf))
-- [laboratories as PDF files](samples/sample_lab/lab-expressions.pdf) or as [HTML files](samples/sample_lab_html/html/lab-fp.html), the PDF being rendered either with LaTeX or, as a [preview feature](#typst-output-preview), [with Typst](samples/sample_lab/lab-expressions-typst.pdf)
-- oral exams (not included in this repo, yet)
-
-# Preamble
-Unfortunately, for the moment, two different sets of tools are used to build the different types of documents. 
-
-Because exams and exercises are based on different categories of questions (MCQs, true/false, long questions, etc.), describing those documents requires a certain amount of granularity for automatic management. This flexibility is achieved with the help of regular LaTex documents along with a set of tools that are used to automatically compute the number of points in an exam for the scale, to produce the solution in the same document, etc.
-
-For laboratories and oral exams, on the other hand, the granularity is less fine (and there is no solution for students to give in a written document). It is therefore possible to simplify the writing process by describing the content in Markdown format. PDF documents are generated automatically from this simple and effective description using the `pandoc` toolchain. As a result, previewing and working with the documents is straightforward, simple and with beautiful results.
-
-In the future, there are plans to unify the two toolchains by offering a Markdown extension to categorize questions and answers, but for the moment this remains a work-in-progress (but feel free to contribute if you are interested !)
+Templates and build scripts for writing good-looking teaching documents for the [ISC curricula](https://isc.hevs.ch). Exams and exercise series are authored in LaTeX on top of Philip Hirschorn's [`exam` class](https://math.mit.edu/~psh/exam/examdoc.pdf), heavily tailored for ISC; labs are authored in GitHub-flavoured Markdown and rendered through [pandoc](https://pandoc.org/) to PDF — with [LaTeX](https://www.latex-project.org/) or, since `1.3.0`, with [Typst](https://typst.app/) — and to standalone HTML.
 
 Have fun teaching :computer:
 Pierre-André
 
----
+## Preview
 
-# Toolchain 1 : LaTex toolchain for exams and series
+| Lab as PDF | Lab as HTML |
+|:---:|:---:|
+| <img src="./output.png" width="400" alt="PDF lab preview"> | <img src="./output_html.png" width="400" alt="HTML lab preview"> |
 
-This is not really a toolchain but a set of LaTex files and scripts for building nice series and exams, based on the `exam` class made by Philip Hirschorn (https://math.mit.edu/~psh/exam/examdoc.pdf). The general look-and-feel has been heavily tailored for the ISC programme and several things have been customized or adapted for the context of computer science. 
+Ready-made samples live in [`./samples`](./samples): a [written exam](./samples/sample_written_exam/exam-sample.pdf) and its [solution](./samples/sample_written_exam/exam-sample-sol.pdf), a [series of exercises](./samples/sample_series/serie-sample.pdf) and its [solution](./samples/sample_series/serie-sample-sol.pdf), a lab rendered [with LaTeX](./samples/sample_lab/lab-expressions.pdf) and [with Typst](./samples/sample_lab/lab-expressions-typst.pdf), and a lab [as HTML](./samples/sample_lab_html/html/lab-fp.html).
 
-## Installing
-The single prerequisite for using this toolchain is having a decently recent installation of LaTex accessible in your system as well a Linux for using the build script. If you don't like Linux or don't want to use it, it is of course possible to compile the samples but you are on your own. 
+## Features
 
-> _What is used ?_
->
-> The template file used for compiling the LaTex samples is located in the `texcommon`. 
-> Yes, I know, the logo files are replicated twice (once for each toolchain) and this is ugly. This is intended, even if it's a bit sad. Deal with it.
+- **Exams that count themselves** — the point total, the scale and the solution document are all derived from the same `.tex` source
+- **Labs in Markdown** — GFM in, PDF out, with YAML front-matter variables forwarded to the template for titles, authors and course metadata
+- **Two renderers, one source** — the very same `.md` feeds `xelatex` and Typst, so you can switch engine with a single flag
+- **Typst preview renderer** — 0.8 s per lab against 4.9 s with `xelatex`, and error messages you can actually read
+- **Standalone HTML output** — a single self-contained file, KaTeX included, several themes available
+- **Batch builds** — `build_all.sh` walks every lab directory and uses GNU `parallel` when it is installed
 
-## Samples
-There are two sample example : one for an exam and a second for a series of exercises (see `xxx-sample.tex` that can be compiled with the corresponding `build.sh` script). The script builds both the solution and the hand-in document for the students. Have a look in the `samples` directories to see the results for the different document types.
-
----
-# Toolchain 2 : `pandoc` for converting GFM markdown to PDF and/or HTML, for ISC labs
-This toolchain uses [pandoc](https://pandoc.org/) for writing labs in Markdown (in its `gfm` flavour). 
-
-The heavy lifting for converting `markdown` to `pdf` is made using `pandoc` with a LaTex template based [on the Wandmalfarbe](https://github.com/Wandmalfarbe/pandoc-latex-template) solution. The conversion to HTML is made with the same tools and `easy-pandoc-templates` from https://github.com/ryangrose/easy-pandoc-templates which has a nice TOC on the side but I finally chose to use `Github.html5` instead.
-
-The conversion is rather fast and can be made in batch. The advantage of this solution resides in 
-- writing Markdown is much faster and easier than plain Tex
-- its speed for converting `md` to `pdf`
-- the fact that variables can be defined at the beginning of the `md` module file using YAML. The variables are then passed to Latex and can be used in the template for further processing.
-- the output is PDF, with the (not yet implemented) possibility to create the corresponding HTML output.
-
-## Sample output
-<img src="output.png" width="50%" height="50%">
-
-## Repository content
-This repository contains a set of script files (in `build_tool`), the corresponding LaTex template for the lab as well as some examples (in the `samples` directory).
-
-## Installing
-The toolchain has been tested on Debian based distros (Ubuntu on WSL2, native Debian) and on MacOS. It has some dependencies on native tools as explained below.
-
-### General Linux dependencies (for Debian based distros)
-Quick install (but not minimal):
+## Quick Start
 
 ```bash
-apt install parallel rename librsvg2-bin
-apt install texlive-full
-```
+# Exams and series: run the build script next to the .tex source.
+# It produces both the student hand-in and the solution.
+cd samples/sample_written_exam && ./build.sh
 
-### General macOS dependencies
-Installation using [MacPorts](https://www.macports.org) (not minimal):
-
-```bash
-port install librsvg
-port install texlive-latex texlive-latex-extra
-```
----  
-
-### Installing Pandoc 
-Please install `pandoc` latest version from here `https://github.com/jgm/pandoc/releases/tag/3.1.2` or newer, following the instructions. Please do not use `apt` for installing `pandoc` as the packages are largely outdated (at least for older Ubuntu distributions).
-
-On macOS, you may install `pandoc` using MacPorts:
-
-```bash
-port install pandoc
-```
-
-### Installing Typst (optional)
-Only needed for the preview renderer described below. Grab a binary from the
-[releases page](https://github.com/typst/typst/releases), or use a package
-manager:
-
-```bash
-brew install typst                    # macOS
-cargo install --locked typst-cli      # anywhere Rust is available
-```
-
-Ghostscript is optional too, and used to shrink the generated PDF (see below).
-Without it the build simply skips that step.
-
-```bash
-apt install ghostscript pngquant      # Debian based
-port install ghostscript pngquant     # macOS
-```
-
-## Compiling a lab with the toolchain
-Clone this repository somewhere in your filesystem. Let's consider that the toolchain is installed in `~/build_tool/`. 
-
-In order to build the PDF from the `samples/sample_lab/lab-expressions.md` file, run from the location the `md` you want to compile is located :
-
-```bash
+# Labs: run the toolchain from the directory holding your Markdown file
 ~/build_tool/build_pandoc.sh -n lab-expressions.md
-```
 
-If no file is specified, the first `md` file is compiled 
-
-```bash 
+# With no file given, the first .md of the directory is compiled
 ~/build_tool/build_pandoc.sh
+
+# Same lab, rendered with Typst instead of LaTeX
+~/build_tool/build_pandoc.sh --typst
+
+# Every lab directory at once, in parallel
+~/build_tool/build_all.sh
 ```
 
-### Continuous compilation
-It is also possible to run compilation every time the source file is changed by using the `build_continuous.sh` script.
+Clone the repository anywhere in your filesystem; the examples above assume the toolchain ended up in `~/build_tool/`.
 
-### Keeping the PDF small
-Screenshots are what make a lab heavy, and they are worth quantizing before
-anything else. From the `figs` directory of your lab:
+## Toolchain 1 — exams and series (LaTeX)
 
-```bash
-pngquant --quality 50-80 *.png --ext .png --force
+Not really a toolchain, rather a set of LaTeX files and scripts building on the `exam` class. The general look-and-feel has been tailored for the ISC programme, and a number of things have been adapted to the context of computer science. The shared template files live in [`./texcommon`](./texcommon).
+
+The only prerequisite is a reasonably recent LaTeX installation and a Linux box for the build script. Compiling the samples elsewhere works, but you are on your own.
+
+Two samples are provided: one exam and one series of exercises, each a `xxx-sample.tex` compiled by the `build.sh` sitting next to it. The script produces both the solution and the hand-in document.
+
+> The logo files are duplicated across the two toolchains. Yes, it is ugly. It is intended.
+
+## Toolchain 2 — labs (Markdown → PDF / HTML)
+
+Because exams and exercises are built out of categorised questions (MCQs, true/false, long questions), they need a granularity that only LaTeX gives. Labs have no such need — no solution to hand in, no points to count — so they are described in Markdown and converted by `pandoc`. Previewing and editing stay straightforward, and the result is still a proper ISC document.
+
+The `md` → `pdf` conversion uses a LaTeX template derived from [Wandmalfarbe's](https://github.com/Wandmalfarbe/pandoc-latex-template); HTML goes through `github.html5`, itself picked over [easy-pandoc-templates](https://github.com/ryangrose/easy-pandoc-templates) after some experimenting with its side TOC.
+
+1. **`pandoc`** — parses the GFM source and applies the Lua filters in [`./build_tool/lua_filters`](./build_tool/lua_filters) (callouts, metadata variables, colours, TODO replacement)
+2. **Template** — `isc_lab.tex` or `isc_lab.typ` receives the YAML front-matter variables and lays the document out
+3. **Engine** — `xelatex` (default), `typst`, or neither for the HTML path
+4. **`ghostscript`** — repacks the Typst PDF when available, and is skipped when it is not
+
+```mermaid
+flowchart TD
+    A["📄 lab.md"] -->|pandoc + lua filters| B["📝 isc_lab.tex"]
+    A -->|pandoc + typst-compat.lua| C["📝 lab.typ"]
+    A -->|pandoc + github.html5| G["🌐 lab.html"]
+    B -->|xelatex| D["📑 lab.pdf"]
+    C -->|typst compile| E["📑 lab-typst.pdf"]
+    E -->|ghostscript| F["📦 lab-typst.pdf, repacked"]
 ```
 
-Careful, this rewrites the files in place, so commit them first or work on a
-copy. On a set of 16 real lab screenshots the gain was 68% (7.9 MB down to
-2.5 MB), for a loss invisible at the size a figure is printed. This is why the
-build scripts do not do it for you: it touches your sources, not the output.
-
-The generated PDF itself is repacked with `ghostscript` on the Typst path, see
-below.
+The script options are `-i FILE` (input), `-n DIR` (working directory), `-o DEST` (copy the PDF somewhere), `-t` (oral exam template), `-e ENGINE` (LaTeX engine), `--typst` / `-y` (hand over to Typst). Anything else is forwarded to `pandoc` untouched. Without `-e`, `xelatex` is used when available, otherwise the first of `lualatex` / `pdflatex` found on the system.
 
 ## Typst output (preview)
-Since version `1.3.0`, labs can also be rendered with [Typst](https://typst.app)
-instead of LaTeX. **This is a preview feature**: the LaTeX template remains the
-reference and is not going anywhere.
 
-Why bother? Speed, mostly: the sample lab takes 0.8 s to render with Typst
-against 4.9 s with `xelatex`, and the error messages are readable. The source
-does not change, the very same `.md` feeds both engines — compare
-[the LaTeX output](samples/sample_lab/lab-expressions.pdf) with
-[the Typst one](samples/sample_lab/lab-expressions-typst.pdf).
-
-Typst does *not* produce smaller files: it embeds a full subset per font, so
-its PDF comes out about three times heavier than the LaTeX one. If
-`ghostscript` is installed, the build repacks the file and brings it back in
-line (290 kB down to 100 kB on the sample); if it is not, the step is skipped
-and the PDF is simply bigger. `--no-compress` turns it off.
+Since version `1.3.0`, labs can also be rendered with Typst instead of LaTeX. **This is a preview feature**: the LaTeX template remains the reference and is not going anywhere.
 
 ```bash
 ~/build_tool/build_pandoc.sh --typst      # -y works too
 ~/build_tool/build_typst.sh               # same thing, called directly
+~/build_tool/build_all.sh --typst         # the whole batch
 ```
 
-`build_all.sh --typst` does the whole batch. The other options are those of the
-LaTeX path (`-i`, `-n`, `-o`).
+Typst does *not* produce smaller files: it embeds a full subset per font, so its PDF comes out about three times heavier than the LaTeX one. If `ghostscript` is installed, the build repacks the file and brings it back in line (290 kB down to 100 kB on the sample); if it is not, the step is skipped and the PDF is simply bigger. `--no-compress` turns it off.
 
-An intermediate `.typ` file is written next to the Markdown and kept on
-purpose: it is what you need to debug a layout problem, and
-`typst compile --watch lab.typ` gives a sub-second edit loop. Add `*.typ` to
-your `.gitignore`, or pass `-c` to `build_typst.sh` to have it removed.
+An intermediate `.typ` file is written next to the Markdown and kept on purpose: it is what you need to debug a layout problem, and `typst compile --watch lab.typ` gives a sub-second edit loop. Add `*.typ` to your `.gitignore`, or pass `-c` to `build_typst.sh` to have it removed.
 
 ### Checking against the LaTeX reference
+
 The whole point being visual parity, there is a tool for it:
 
 ```bash
 ~/build_tool/compareEngines.sh lab-expressions.md
 ```
 
-It renders the same source with both engines and writes one PNG per page, LaTeX
-on the left and Typst on the right, along with the two page counts. Spacing
-differences are invisible in the sources: you have to look at the pages.
+It renders the same source with both engines and writes one PNG per page, LaTeX on the left and Typst on the right, along with the two page counts. Spacing differences are invisible in the sources: you have to look at the pages.
 
 ### What is ported, and what is not
-Ported, in `build_tool/typst/isc_lab.typ`: page geometry, fonts, headers and
-footers, headings with their rules, framed listings with line numbers, booktabs
-tables, captions, block quotes and the callout boxes (`::: info`,
-`::: warning`, `::: checkout`, closed by a bare `:::`, with the default title
-replaceable through `::: {.warning title="..."}`). The sample lab uses all
-three. The spacing is
-calibrated against the LaTeX output, measured rather than eyeballed.
 
-Not ported: the oral exam template, and toolchain 1 for exams and series, which
-does not go through `pandoc` at all.
+Ported, in [`./build_tool/typst/isc_lab.typ`](./build_tool/typst/isc_lab.typ): page geometry, fonts, headers and footers, headings with their rules, framed listings with line numbers, booktabs tables, captions, block quotes and the callout boxes (`::: info`, `::: warning`, `::: checkout`, closed by a bare `:::`, with the default title replaceable through `::: {.warning title="..."}`). The sample lab uses all three. The spacing is calibrated against the LaTeX output, measured rather than eyeballed.
+
+Not ported: the oral exam template, and toolchain 1 for exams and series, which does not go through `pandoc` at all.
 
 Known differences:
 
-- A `\newpage` at the end of a list item is dropped, Typst forbidding a page
-  break inside a container. One at the end of a paragraph works fine.
-- Syntax highlighting uses Typst's own engine, so token colours are close to,
-  but not identical to, the `lstlisting` palette.
-- A level-2 heading placed directly under a level-1 one gets slightly more air
-  than in LaTeX, which collapses the spacing of consecutive titles.
+- A `\newpage` at the end of a list item is dropped, Typst forbidding a page break inside a container. One at the end of a paragraph works fine.
+- Syntax highlighting uses Typst's own engine, so token colours are close to, but not identical to, the `lstlisting` palette.
+- A level-2 heading placed directly under a level-1 one gets slightly more air than in LaTeX, which collapses the spacing of consecutive titles.
 
-Raw LaTeX in the Markdown is translated where an equivalent exists (`\newpage`,
-`\vspace`, `\label`, `\ref`); anything else is dropped, so do check the result
-if your source leans on LaTeX commands.
+Raw LaTeX in the Markdown is translated where an equivalent exists (`\newpage`, `\vspace`, `\label`, `\ref`); anything else is dropped, so do check the result if your source leans on LaTeX commands.
 
-## Compiling with HTML output
-For HTML output, `pandoc` is used as well. Different themes are provided and even though the results are not perfect so far, it works. To see how it works, go to `samples/sample_lab_html` and run the corresponding `.sh` files. The output looks like this : 
+## HTML output
 
-<img src="output_html.png" width="50%" height="50%">
+HTML goes through `pandoc` as well, and the output is a single self-contained file. Several themes are embedded in [`./build_tool/html_templates`](./build_tool/html_templates); the results are not perfect yet, but they work. Go to [`./samples/sample_lab_html`](./samples/sample_lab_html) and run the `.sh` files to see for yourself.
 
-For continuous update during development, I use (even if not really required but so comfy to use) 
+For continuous rebuilds while writing, `build_html_continuous.sh` relies on `filewatcher`:
 
 ```bash
-gem install filewatcher
-gem install filewatcher-cli
-```
-
-and then
-
-```bash
+gem install filewatcher filewatcher-cli
 ./build_html.sh
 ```
 
-The output is very nice as it is a single HTML file ! The different templates are embedded in the `build_tool` directory.
+## Keeping the PDF small
 
-# Questions and help
-If you need any help for installing or running those tools, do not hesitate to get in touch with its maintainer. 
+Screenshots are what make a lab heavy, and they are worth quantizing before anything else. From the `figs` directory of your lab:
 
-You can of course also propose changes using PR or raise issues if something is not clear. Have fun teaching !
+```bash
+pngquant --quality 50-80 *.png --ext .png --force
+```
+
+Careful, this rewrites the files in place, so commit them first or work on a copy. On a set of 16 real lab screenshots the gain was 68% (7.9 MB down to 2.5 MB), for a loss invisible at the size a figure is printed. This is why the build scripts do not do it for you: it touches your sources, not the output.
+
+## Dependencies
+
+The toolchain is tested on Debian-based distributions (Ubuntu on WSL2, native Debian) and on macOS. The table below lists every binary the build scripts call. MacPorts works just as well as Homebrew — `port install <pkg>` for the same package names.
+
+| Tool | Required for | Linux (Debian/Ubuntu) | macOS (Homebrew) |
+| --- | --- | --- | --- |
+| **pandoc** | Markdown → PDF and HTML | [GitHub release](https://github.com/jgm/pandoc/releases) `.deb` (do *not* use `apt`, its packages are outdated) | `brew install pandoc` |
+| **TeX Live** | every LaTeX document, exams included | `apt install texlive-full` | `port install texlive-latex texlive-latex-extra` |
+| **librsvg** | SVG figures and logos | `apt install librsvg2-bin` | `brew install librsvg` |
+| **GNU parallel** | batch builds with `build_all.sh` | `apt install parallel` | `brew install parallel` |
+| **rename** | batch builds | `apt install rename` | `brew install rename` |
+| **typst** | the Typst preview renderer | [GitHub release](https://github.com/typst/typst/releases), or `cargo install --locked typst-cli` | `brew install typst` |
+| **ghostscript** | optional — repacking the Typst PDF | `apt install ghostscript` | `brew install ghostscript` |
+| **pngquant** | optional — quantizing figures | `apt install pngquant` | `brew install pngquant` |
+| **poppler-utils** | `compareEngines.sh` (`pdftoppm`) | `apt install poppler-utils` | `brew install poppler` |
+| **filewatcher** | optional — continuous HTML rebuilds | `gem install filewatcher filewatcher-cli` | `gem install filewatcher filewatcher-cli` |
+
+## Roadmap
+
+Unifying the two toolchains behind a Markdown extension able to categorise questions and answers is the plan, so that exams and series stop needing hand-written LaTeX. This remains work-in-progress — contributions welcome. Oral exams have a template but no sample yet.
+
+If you need help installing or running the tools, get in touch with the maintainer, open an issue, or send a PR.
+
+---
+
+## License
+
+Copyright © 2023–2026 P.-A. Mudry / ISC — HES-SO Valais. This work is licensed under a [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+You are free to share and adapt the material for non-commercial purposes, as long as you give appropriate credit and distribute your contributions under the same licence.
+
+---
+
+*Made with ♥ by mui, 2026*
