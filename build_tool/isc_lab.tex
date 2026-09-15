@@ -814,7 +814,16 @@ $if(listings)$
 
 % So numbers are not copied
 \usepackage{accsupp}
-\renewcommand*{\thelstnumber}{\protect\BeginAccSupp{ActualText={}}\arabic{lstnumber}\protect\EndAccSupp{}}
+% NOTE: do *not* redefine \thelstnumber here. \refstepcounter{lstnumber} puts it
+% into \@currentlabel, and hyperref re-expands that inside an \xdef, where the
+% \BeginAccSupp keyval parsing collides with the active `/` installed by
+% escapeinside={/*@}{@*/} -> "Undefined control sequence \lst@IfNextCharsArg".
+% Applying the wrapper through numberstyle keeps it purely at typesetting time.
+\newcommand{\noncopynumber}[1]{%
+    \BeginAccSupp{method=escape,ActualText={}}%
+    #1%
+    \EndAccSupp{}%
+}
 
 \lstdefinestyle{framed}{
     style=basic_style,
@@ -826,7 +835,7 @@ $if(listings)$
     rulecolor        = \color{listing-rule},
     % frameround       = tttt,
     tabsize          = 4,
-    numberstyle      = \footnotesize\color{listing-numbers},
+    numberstyle      = {\footnotesize \color{listing-numbers}\noncopynumber},
     % aboveskip        = 1.0em,
     % belowskip        = 0.1em,
     % abovecaptionskip = 0em,
@@ -904,7 +913,7 @@ $if(listings)$
 \lstdefinelanguage{scala}{
   style=framed,
   numbers = left,
-  numberstyle = {\scriptsize \color{listing-numbers}},
+  numberstyle = {\scriptsize \color{listing-numbers}\noncopynumber},
   stepnumber =1,
   numbersep = 15pt,
   basicstyle={\footnotesize\ttfamily\color{hei_dark}},
@@ -934,7 +943,7 @@ $if(listings)$
 \lstdefinelanguage{C}{
   style = framed,
   numbers = left,
-  numberstyle = {\scriptsize \color{listing-numbers}},
+  numberstyle = {\scriptsize \color{listing-numbers}\noncopynumber},
   stepnumber =1,
   numbersep = 15pt,
   basicstyle={\footnotesize\ttfamily\color{hei_dark}},
@@ -977,7 +986,7 @@ $if(listings)$
   morestring=[b]',
   morestring=[b]"
   numbers=left,
-  numberstyle=\tiny\color{gray},
+  numberstyle=\tiny\color{gray}\noncopynumber,
   numbersep=5pt,
   columns=fullflexible,
   showstringspaces=false,
