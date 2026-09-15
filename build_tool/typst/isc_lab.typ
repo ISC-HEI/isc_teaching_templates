@@ -260,10 +260,19 @@ $definitions.typst()$
   }
 
   // \renewenvironment{quote}: 3pt grey bar on the left, grey text.
+  // \renewenvironment{quote} draws a 3pt grey bar on the left and greys the
+  // text, and the global \mdfsetup adds backgroundcolor=black!5 and
+  // roundcorner=4 on top of it -- easy to miss, since neither appears on the
+  // \newmdenv line itself.
+  //
+  // A quote sat too close to the paragraph above it, so the LaTeX mdframed
+  // gained 6pt of skipabove; `above` carries the matching value.
   show quote.where(block: true): it => block(
     width: 100%,
-    inset: (left: 10pt),
-    above: 6pt,
+    fill: listing-back,
+    radius: 4pt,
+    inset: (left: 10pt, rest: 5pt),
+    above: 12pt,
     below: 6pt,
     stroke: (left: 3pt + blockquote-bar),
     text(fill: blockquote-text, it.body),
