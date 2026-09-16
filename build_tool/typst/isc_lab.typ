@@ -1,4 +1,11 @@
-$definitions.typst()$
+// Definitions presupposed by pandoc's typst output. Pandoc used to provide
+// them as a `definitions.typst` partial, which this template included; the
+// partial was dropped in pandoc 3.6, so the one definition its writer still
+// emits is kept here. (`endnote`, the other one the partial had, is no
+// longer emitted: footnotes now go through Typst's own `#footnote`.)
+#let horizontalrule = [
+  #line(start: (25%,0%), end: (75%,0%))
+]
 
 // =========================================================================
 //  ISC lab template -- Typst port of isc_lab.tex

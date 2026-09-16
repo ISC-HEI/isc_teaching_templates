@@ -1,5 +1,5 @@
 #!/bin/bash
-VERSION="1.3.1"
+VERSION="1.3.2"
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 DIR="."
 TEMPLATE="isc_lab.tex"
@@ -77,6 +77,25 @@ while [ $# -gt 0 ]; do
          shift ;;
    esac
 done
+
+############################################################
+# Minimum pandoc version                                   #
+############################################################
+# The typst template targets the writer of pandoc 3.6 and later: 3.6 dropped
+# the `definitions.typst` data template that older templates included, and
+# changed what the typst writer emits. Older pandocs fail with a confusing
+# "Could not find data file" instead, so they are caught here.
+PANDOC_MIN="3.9"
+command -v pandoc > /dev/null 2>&1 || {
+   printf "${RED}- Error: pandoc not found in PATH.${RESET}\n"
+   exit 1
+}
+PANDOC_VERSION=$(pandoc --version | head -1 | awk '{print $2}')
+if [ "$(printf '%s\n' "$PANDOC_MIN" "$PANDOC_VERSION" | sort -V | head -1)" != "$PANDOC_MIN" ]; then
+   printf "${RED}- Error: pandoc %s is too old, %s or later is required.${RESET}\n" \
+      "$PANDOC_VERSION" "$PANDOC_MIN"
+   exit 1
+fi
 
 ############################################################
 # Select the LaTeX engine                                  #

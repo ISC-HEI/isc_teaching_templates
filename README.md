@@ -70,6 +70,18 @@ Two samples are provided: one exam and one series of exercises, each a `xxx-samp
 
 Because exams and exercises are built out of categorised questions (MCQs, true/false, long questions), they need a granularity that only LaTeX gives. Labs have no such need — no solution to hand in, no points to count — so they are described in Markdown and converted by `pandoc`. Previewing and editing stay straightforward, and the result is still a proper ISC document.
 
+### Prerequisites
+
+| | |
+|---|---|
+| **`pandoc` ≥ 3.9** | required. The Typst template targets the writer of pandoc 3.6 and later, which dropped the `definitions.typst` data template that older templates included; 3.9 is the version the templates are tested against. `build_pandoc.sh` and `build_typst.sh` refuse to run on an older pandoc rather than failing later with a puzzling `Could not find data file` (`build_html.sh` is not guarded) |
+| **`xelatex`** | for the LaTeX renderer (`lualatex` / `pdflatex` are used as fallbacks) |
+| **`typst`** | for the Typst renderer, tested with `0.15.1` |
+| **`ghostscript`** | optional, repacks the Typst PDF; skipped when absent |
+| **Fonts** | Source Sans 3 and Fira Mono must be visible to typst — `typst fonts` lists what it sees, and `~/.local/share/fonts` is enough. New Computer Modern Math ships with typst and needs no install |
+
+> **Watch the fonts.** Typst does not fail on a missing font: it prints `warning: unknown font family: ...` and silently falls back to a serif, which is easy to miss in the build output and ends up in a PDF you commit. If a rebuild suddenly looks different, check `typst fonts` first.
+
 The `md` → `pdf` conversion uses a LaTeX template derived from [Wandmalfarbe's](https://github.com/Wandmalfarbe/pandoc-latex-template); HTML goes through `github.html5`, itself picked over [easy-pandoc-templates](https://github.com/ryangrose/easy-pandoc-templates) after some experimenting with its side TOC.
 
 1. **`pandoc`** — parses the GFM source and applies the Lua filters in [`./build_tool/lua_filters`](./build_tool/lua_filters) (callouts, metadata variables, colours, TODO replacement)
