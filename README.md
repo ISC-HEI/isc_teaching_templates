@@ -66,6 +66,18 @@ Two samples are provided: one exam and one series of exercises, each a `xxx-samp
 
 > The logo files are duplicated across the two toolchains. Yes, it is ugly. It is intended.
 
+## Toolchain 1b — exams and series in Typst
+
+Since October 2026 the exam template also exists as a Typst package, [`isc-hei-exam`](https://github.com/ISC-HEI/isc-hei-exam), a one-to-one port of toolchain 1: same geometry, cover, margin points, grade table, answer spaces and the two PDFs (students and solutions) out of one source. It was calibrated page for page against the two samples of this repository and against a real 14-page exam. The LaTeX class stays the reference and is not going anywhere.
+
+```bash
+typst init @preview/isc-hei-exam                        # a project from the template
+typst compile exam.typ                                  # the student version
+typst compile --input solutions=true exam.typ exam-sol.pdf   # the solutions
+```
+
+The package README carries the LaTeX → Typst mapping table (`\titledquestion` → `question`, `\solutionordottedlines` → `solution-or-dotted-lines`, …) and a comparison tool that renders a Typst exam next to its LaTeX PDF, page by page.
+
 ## Toolchain 2 — labs (Markdown → PDF / HTML)
 
 Because exams and exercises are built out of categorised questions (MCQs, true/false, long questions), they need a granularity that only LaTeX gives. Labs have no such need — no solution to hand in, no points to count — so they are described in Markdown and converted by `pandoc`. Previewing and editing stay straightforward, and the result is still a proper ISC document.
@@ -129,7 +141,7 @@ It renders the same source with both engines and writes one PNG per page, LaTeX 
 
 Ported, in [`./build_tool/typst/isc_lab.typ`](./build_tool/typst/isc_lab.typ): page geometry, fonts, headers and footers, headings with their rules, framed listings with line numbers, booktabs tables, captions, block quotes and the callout boxes (`::: info`, `::: warning`, `::: checkout`, closed by a bare `:::`, with the default title replaceable through `::: {.warning title="..."}`). The sample lab uses all three. The spacing is calibrated against the LaTeX output, measured rather than eyeballed.
 
-Not ported: the oral exam template, and toolchain 1 for exams and series, which does not go through `pandoc` at all.
+Not ported here: the oral exam template. Exams and series, which do not go through `pandoc` at all, are covered by the separate `isc-hei-exam` package (see Toolchain 1b).
 
 Known differences:
 
