@@ -12,6 +12,8 @@ Handled:
     \vspace{4mm} / \vspace*{4mm}         ->  #v(4mm)
     \label{x} in a figure caption        ->  a Typst label placed after the figure
     \ref{x} / \autoref{x} / \pageref{x}  ->  @x
+    \begin{cases} ... \end{cases}          ->  cases(...)
+    \left\{\begin{matrix} ... \right.      ->  cases(...)
 
 Active for Typst output only; every other writer sees the document
 unchanged, so the LaTeX pipeline keeps working exactly as before.
@@ -148,11 +150,70 @@ local function figure (el)
   return el
 end
 
+-- ── Systems of equations ─────────────────────────────────────────────────
+-- texmath, which pandoc uses to translate LaTeX math into Typst math, has
+-- no Typst counterpart for `cases`: it emits a bare `{` followed by line
+-- breaks, and the brace stays one line high instead of spanning the
+-- system. Both spellings found in the sources are rewritten into Typst's
+-- `cases()`. Each row still goes through the regular writer, so the LaTeX
+-- inside it (\frac, \sin, ^2, ...) is translated by texmath as usual.
+local function typst_math (latex)
+  if latex:match('^%s*$') then return '' end
+  local doc = pandoc.Pandoc({ pandoc.Plain({ pandoc.Math('InlineMath', latex) }) })
+  local out = pandoc.write(doc, 'typst')
+  out = out:gsub('^%s*%$', '')
+  out = out:gsub('%$%s*$', '')
+  -- texmath silently drops \dfrac and \displaystyle, which turns the
+  -- fractions of a system into cramped inline ones. Typst's display()
+  -- restores what the source asked for.
+  if latex:match('\\dfrac') or latex:match('\\displaystyle') then
+    out = 'display(' .. out .. ')'
+  end
+  return out
+end
+
+local function math (el)
+  local pre, body, post =
+    el.text:match('^(.-)\\begin{cases}(.-)\\end{cases}(.*)$')
+  if not body then
+    pre, body, post = el.text:match(
+      '^(.-)\\left\\{%s*\\begin{matrix}(.-)\\end{matrix}%s*\\right%.(.*)$')
+  end
+  if not body then return nil end
+
+  -- Rows are separated by `\\`, optionally followed by a `[2mm]` spacing
+  -- that Typst's cases() has no use for. Inside a row, `&` splits the
+  -- columns: texmath refuses a bare `&`, so each cell is translated on its
+  -- own and the `&` is put back, Typst aligning on it as LaTeX does.
+  local rows = {}
+  body = body:gsub('\\\\%s*%b[]', '\\\\')
+  for row in (body .. '\\\\'):gmatch('(.-)\\\\') do
+    local cells = {}
+    for cell in (row .. '&'):gmatch('(.-)&') do
+      cells[#cells + 1] = typst_math(cell)
+    end
+    row = table.concat(cells, ' & ')
+    row = row:gsub('^%s+', ''):gsub('%s+$', '')
+    if row ~= '' then
+      rows[#rows + 1] = row
+    end
+  end
+  if #rows == 0 then return nil end
+
+  local text = typst_math(pre) .. ' cases(' .. table.concat(rows, ', ') .. ') '
+    .. typst_math(post)
+  text = text:gsub('^%s+', ''):gsub('%s+$', '')
+  if el.mathtype == 'DisplayMath' then
+    return pandoc.RawInline('typst', '$ ' .. text .. ' $')
+  end
+  return pandoc.RawInline('typst', '$' .. text .. '$')
+end
+
 -- Pandoc applies inline handlers before block handlers inside one filter
 -- table, which would strip `\label{}` before `figure()` could move it.
 -- Returning two tables forces a full first pass over the figures, then a
 -- second one over everything else.
 return {
   { Figure = figure, Para = para },
-  { RawBlock = rawblock, RawInline = rawinline },
+  { RawBlock = rawblock, RawInline = rawinline, Math = math },
 }
