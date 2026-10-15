@@ -10,6 +10,7 @@ Handled:
 
     \newpage / \clearpage / \pagebreak   ->  #pagebreak()
     \vspace{4mm} / \vspace*{4mm}         ->  #v(4mm)
+    $\vspace{4mm}$ (math-wrapped)        ->  #v(4mm)
     \label{x} in a figure caption        ->  a Typst label placed after the figure
     \ref{x} / \autoref{x} / \pageref{x}  ->  @x
     \begin{cases} ... \end{cases}          ->  cases(...)
@@ -173,6 +174,14 @@ local function typst_math (latex)
 end
 
 local function math (el)
+  -- `$\vspace{5mm}$` is a LaTeX idiom for a spacer the Markdown parser
+  -- cannot swallow; it reaches us as Math, which texmath cannot translate
+  -- and would print verbatim. Treat it as the raw command it stands for.
+  local v = vspace(el.text:gsub('^%s+', ''))
+  if v then
+    return pandoc.RawInline('typst', v)
+  end
+
   local pre, body, post =
     el.text:match('^(.-)\\begin{cases}(.-)\\end{cases}(.*)$')
   if not body then
