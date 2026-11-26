@@ -13,6 +13,7 @@ Handled:
     $\vspace{4mm}$ (math-wrapped)        ->  #v(4mm)
     \label{x} in a figure caption        ->  a Typst label placed after the figure
     \ref{x} / \autoref{x} / \pageref{x}  ->  @x
+    \url{https://...}                    ->  a regular link showing the URL
     \begin{cases} ... \end{cases}          ->  cases(...)
     \left\{\begin{matrix} ... \right.      ->  cases(...)
 
@@ -47,6 +48,18 @@ local function vspace (text)
   return nil
 end
 
+-- ── URLs ─────────────────────────────────────────────────────────────────
+-- `\url{...}` becomes a native pandoc link whose text is the address, which
+-- is what LaTeX prints. LaTeX wants `#`, `%`, `_` and `&` escaped inside the
+-- argument in some contexts (a footnote, a caption); the backslash is not
+-- part of the address and is removed.
+local function url (text)
+  local target = text:match('^\\url%s*{([^}]*)}%s*$')
+  if not target then return nil end
+  target = target:gsub('\\([#%%_&])', '%1')
+  return pandoc.Link(pandoc.Str(target), target)
+end
+
 -- ── Page breaks ───────────────────────────────────────────────────────────
 local function rawblock (el)
   if is_latex(el) and el.text:match('^\\%s*$') == nil then
@@ -58,6 +71,11 @@ local function rawblock (el)
     local v = vspace(el.text)
     if v then
       return pandoc.RawBlock('typst', v)
+    end
+
+    local link = url(el.text)
+    if link then
+      return pandoc.Para({ link })
     end
   end
   return nil
@@ -82,6 +100,11 @@ local function rawinline (el)
 
   if el.text:match('^\\label%s*{') then
     return {}
+  end
+
+  local link = url(el.text)
+  if link then
+    return link
   end
 
   local v = vspace(el.text)
